@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cogni_load"
+    namespace = "com.example.cognitask"
     compileSdk {
         version = release(36)
     }
