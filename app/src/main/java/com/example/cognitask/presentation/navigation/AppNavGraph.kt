@@ -43,7 +43,6 @@ fun AppNavGraph(
         startDestination = startDestination
     ) {
 
-        //Логин
         composable(Screen.Login.route) {
             val vm: AuthViewModel = hiltViewModel()
             val state by vm.authState.collectAsStateWithLifecycle()
@@ -63,7 +62,6 @@ fun AppNavGraph(
             )
         }
 
-        //Регистрация
         composable(Screen.Register.route) {
             val vm: AuthViewModel = hiltViewModel()
             val state by vm.authState.collectAsStateWithLifecycle()
@@ -81,7 +79,6 @@ fun AppNavGraph(
             )
         }
 
-        //Главный экран
         composable(Screen.Home.route) {
             val vm: AuthViewModel = hiltViewModel()
             HomeScreen(
@@ -91,7 +88,10 @@ fun AppNavGraph(
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                onNavigateToTasks = { navController.navigate(Screen.TaskList.route) }
+                onNavigateToTasks = { navController.navigate(Screen.TaskList.route) },
+                onNavigateToForm  = { taskId ->
+                    navController.navigate(Screen.TaskForm.createRoute(taskId))
+                }
             )
         }
 
