@@ -2,14 +2,26 @@ package com.example.cognitask.presentation.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,15 +52,15 @@ fun TaskCard(
     )
 
     Card(
-        modifier  = modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onEdit(task.id) },
-        shape     = RoundedCornerShape(12.dp),
-        colors    = CardDefaults.cardColors(containerColor = cardColor),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(if (task.isCompleted) 0.dp else 2.dp)
     ) {
         Row(
-            modifier          = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Чекбокс
@@ -65,19 +77,19 @@ fun TaskCard(
             Column(modifier = Modifier.weight(1f)) {
                 // Название
                 Text(
-                    text            = task.title,
-                    style           = MaterialTheme.typography.titleSmall,
-                    textDecoration  = if (task.isCompleted) TextDecoration.LineThrough
+                    text = task.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough
                     else TextDecoration.None,
-                    maxLines        = 1,
-                    overflow        = TextOverflow.Ellipsis
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 // Описание
                 if (task.description.isNotBlank()) {
                     Text(
-                        text     = task.description,
-                        style    = MaterialTheme.typography.bodySmall,
-                        color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = task.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -87,7 +99,7 @@ fun TaskCard(
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     SuggestionChip(
                         onClick = {},
-                        label   = {
+                        label = {
                             Text(
                                 "★ ${task.importance}",
                                 style = MaterialTheme.typography.labelSmall,
@@ -97,15 +109,22 @@ fun TaskCard(
                     )
                     SuggestionChip(
                         onClick = {},
-                        label   = { Text("⚡ ${task.effort}/10",
-                            style = MaterialTheme.typography.labelSmall) }
+                        label = {
+                            Text(
+                                "⚡ ${task.effort}/10",
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     )
                     task.deadline?.let {
                         SuggestionChip(
                             onClick = {},
-                            label   = {
+                            label = {
                                 Text(
-                                    SimpleDateFormat("dd.MM.yy", Locale.getDefault()).format(Date(it)),
+                                    SimpleDateFormat(
+                                        "dd.MM.yy",
+                                        Locale.getDefault()
+                                    ).format(Date(it)),
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             }
@@ -114,13 +133,13 @@ fun TaskCard(
                     if (task.recurrence != Recurrence.NONE) {
                         SuggestionChip(
                             onClick = {},
-                            label   = {
+                            label = {
                                 Text(
                                     when (task.recurrence) {
-                                        Recurrence.DAILY    -> "🔁 День"
-                                        Recurrence.WEEKLY   -> "🔁 Нед."
+                                        Recurrence.DAILY -> "🔁 День"
+                                        Recurrence.WEEKLY -> "🔁 Нед."
                                         Recurrence.BIWEEKLY -> "🔁 2 нед."
-                                        else                -> ""
+                                        else -> ""
                                     },
                                     style = MaterialTheme.typography.labelSmall
                                 )
@@ -131,12 +150,16 @@ fun TaskCard(
             }
 
             IconButton(onClick = { onEdit(task.id) }) {
-                Icon(Icons.Filled.Edit, "Редактировать",
-                    tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Filled.Edit, "Редактировать",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
             IconButton(onClick = { onDelete(task.id) }) {
-                Icon(Icons.Filled.Delete, "Удалить",
-                    tint = MaterialTheme.colorScheme.error)
+                Icon(
+                    Icons.Filled.Delete, "Удалить",
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
@@ -144,8 +167,8 @@ fun TaskCard(
 
 @Composable
 private fun importanceColor(importance: Int) = when (importance) {
-    5    -> MaterialTheme.colorScheme.error
-    4    -> MaterialTheme.colorScheme.error.copy(alpha = 0.75f)
-    3    -> MaterialTheme.colorScheme.tertiary
+    5 -> MaterialTheme.colorScheme.error
+    4 -> MaterialTheme.colorScheme.error.copy(alpha = 0.75f)
+    3 -> MaterialTheme.colorScheme.tertiary
     else -> MaterialTheme.colorScheme.outline
 }

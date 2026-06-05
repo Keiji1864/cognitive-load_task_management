@@ -53,15 +53,15 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
-    var name            by rememberSaveable { mutableStateOf("") }
-    var email           by rememberSaveable { mutableStateOf("") }
-    var password        by rememberSaveable { mutableStateOf("") }
-    var confirm         by rememberSaveable { mutableStateOf("") }
-    var passVisible     by rememberSaveable { mutableStateOf(false) }
-    var confirmVisible  by rememberSaveable { mutableStateOf(false) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var confirm by rememberSaveable { mutableStateOf("") }
+    var passVisible by rememberSaveable { mutableStateOf(false) }
+    var confirmVisible by rememberSaveable { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
-    val isLoading    = uiState is AuthUiState.Loading
+    val isLoading = uiState is AuthUiState.Loading
     val errorMessage = (uiState as? AuthUiState.Error)?.message
 
     LaunchedEffect(uiState) {
@@ -75,7 +75,7 @@ fun RegisterScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateToLogin) {
                         Icon(
-                            imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Назад"
                         )
                     }
@@ -96,11 +96,11 @@ fun RegisterScreen(
 
             //Имя
             OutlinedTextField(
-                value         = name,
+                value = name,
                 onValueChange = { name = it },
-                label         = { Text("Имя") },
-                singleLine    = true,
-                enabled       = !isLoading,
+                label = { Text("Имя") },
+                singleLine = true,
+                enabled = !isLoading,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
@@ -112,14 +112,14 @@ fun RegisterScreen(
 
             //Email
             OutlinedTextField(
-                value         = email,
+                value = email,
                 onValueChange = { email = it },
-                label         = { Text("Email") },
-                singleLine    = true,
-                enabled       = !isLoading,
+                label = { Text("Email") },
+                singleLine = true,
+                enabled = !isLoading,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
-                    imeAction    = ImeAction.Next
+                    imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
@@ -131,11 +131,11 @@ fun RegisterScreen(
 
             //Пароль
             OutlinedTextField(
-                value         = password,
+                value = password,
                 onValueChange = { password = it },
-                label         = { Text("Пароль (мин. 6 символов)") },
-                singleLine    = true,
-                enabled       = !isLoading,
+                label = { Text("Пароль (мин. 6 символов)") },
+                singleLine = true,
+                enabled = !isLoading,
                 visualTransformation = if (passVisible)
                     VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -149,7 +149,7 @@ fun RegisterScreen(
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction    = ImeAction.Next
+                    imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
@@ -161,11 +161,11 @@ fun RegisterScreen(
 
             //Подтверждение пароля
             OutlinedTextField(
-                value         = confirm,
+                value = confirm,
                 onValueChange = { confirm = it },
-                label         = { Text("Повторите пароль") },
-                singleLine    = true,
-                enabled       = !isLoading,
+                label = { Text("Повторите пароль") },
+                singleLine = true,
+                enabled = !isLoading,
                 visualTransformation = if (confirmVisible)
                     VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -179,7 +179,7 @@ fun RegisterScreen(
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction    = ImeAction.Done
+                    imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
                     onDone = {
@@ -193,9 +193,9 @@ fun RegisterScreen(
             //Ошибка
             AnimatedVisibility(visible = errorMessage != null) {
                 Text(
-                    text     = errorMessage ?: "",
-                    color    = MaterialTheme.colorScheme.error,
-                    style    = MaterialTheme.typography.bodySmall,
+                    text = errorMessage ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 6.dp)
@@ -206,16 +206,16 @@ fun RegisterScreen(
 
             //Кнопка регистрации
             Button(
-                onClick  = { focusManager.clearFocus(); onRegister(name, email, password, confirm) },
-                enabled  = !isLoading,
+                onClick = { focusManager.clearFocus(); onRegister(name, email, password, confirm) },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier    = Modifier.size(22.dp),
-                        color       = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(22.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                 } else {
@@ -228,7 +228,7 @@ fun RegisterScreen(
             //Ссылка на вход
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text  = "Уже есть аккаунт?",
+                    text = "Уже есть аккаунт?",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

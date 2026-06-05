@@ -4,7 +4,14 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,14 +33,14 @@ fun EnergySelector(
 ) {
     Column(modifier = modifier) {
         Row(
-            modifier              = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
                 Text(
                     "Уровень сил сегодня",
-                    style      = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
@@ -49,18 +56,18 @@ fun EnergySelector(
 
         // 10 делений
         Row(
-            modifier              = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             (1..10).forEach { level ->
-                val filled    = level <= value
+                val filled = level <= value
                 val isSelected = level == value
 
                 val targetColor = when {
-                    !filled    -> Color.Transparent
+                    !filled -> Color.Transparent
                     level <= 3 -> Color(0xFFEF5350)   // красный  - мало сил
                     level <= 6 -> Color(0xFFFFA726)   // желтый - средне
-                    else       -> Color(0xFF66BB6A)   // зелёный  - много сил
+                    else -> Color(0xFF66BB6A)   // зелёный  - много сил
                 }
                 val bgColor by animateColorAsState(
                     targetValue = targetColor,
@@ -83,10 +90,10 @@ fun EnergySelector(
                 ) {
                     if (isSelected) {
                         Text(
-                            text       = level.toString(),
-                            style      = MaterialTheme.typography.labelMedium,
+                            text = level.toString(),
+                            style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
-                            color      = Color.White
+                            color = Color.White
                         )
                     }
                 }
@@ -95,33 +102,37 @@ fun EnergySelector(
 
         // Подписи
         Row(
-            modifier              = Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("1 — нет сил",
+            Text(
+                "1 — нет сил",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("10 — полон сил",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                "10 — полон сил",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
 
 private fun energyEmoji(v: Int) = when {
-    v <= 2  -> "😴"
-    v <= 4  -> "😐"
-    v <= 6  -> "🙂"
-    v <= 8  -> "😊"
-    else    -> "⚡"
+    v <= 2 -> "😴"
+    v <= 4 -> "😐"
+    v <= 6 -> "🙂"
+    v <= 8 -> "😊"
+    else -> "⚡"
 }
 
 private fun energyLabel(v: Int) = when {
-    v <= 2  -> "Совсем нет сил"
-    v <= 4  -> "Немного устал"
-    v <= 6  -> "Нормальный день"
-    v <= 8  -> "Хорошая форма"
-    else    -> "Готов горы свернуть"
+    v <= 2 -> "Совсем нет сил"
+    v <= 4 -> "Немного устал"
+    v <= 6 -> "Нормальный день"
+    v <= 8 -> "Хорошая форма"
+    else -> "Готов горы свернуть"
 }

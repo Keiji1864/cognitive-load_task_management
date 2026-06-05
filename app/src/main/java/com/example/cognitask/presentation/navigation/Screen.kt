@@ -2,11 +2,11 @@ package com.example.cognitask.presentation.navigation
 
 sealed class Screen(val route: String) {
     //Auth
-    data object Login    : Screen("login")
+    data object Login : Screen("login")
     data object Register : Screen("register")
 
     //Main
-    data object Home    : Screen("home")
+    data object Home : Screen("home")
     data object Profile : Screen("profile")
 
     //Tasks

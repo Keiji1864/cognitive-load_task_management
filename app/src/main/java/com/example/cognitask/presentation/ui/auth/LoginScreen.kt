@@ -51,12 +51,12 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
-    var email    by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
-    val isLoading    = uiState is AuthUiState.Loading
+    val isLoading = uiState is AuthUiState.Loading
     val errorMessage = (uiState as? AuthUiState.Error)?.message
 
     LaunchedEffect(uiState) {
@@ -96,14 +96,14 @@ fun LoginScreen(
 
             // Email
             OutlinedTextField(
-                value           = email,
-                onValueChange   = { email = it },
-                label           = { Text("Email") },
-                singleLine      = true,
-                enabled         = !isLoading,
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                singleLine = true,
+                enabled = !isLoading,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
-                    imeAction    = ImeAction.Next
+                    imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
@@ -115,11 +115,11 @@ fun LoginScreen(
 
             // Пароль
             OutlinedTextField(
-                value       = password,
+                value = password,
                 onValueChange = { password = it },
-                label       = { Text("Пароль") },
-                singleLine  = true,
-                enabled     = !isLoading,
+                label = { Text("Пароль") },
+                singleLine = true,
+                enabled = !isLoading,
                 visualTransformation = if (passwordVisible)
                     VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -134,7 +134,7 @@ fun LoginScreen(
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction    = ImeAction.Done
+                    imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
                     onDone = {
@@ -148,9 +148,9 @@ fun LoginScreen(
             //Сообщение об ошибке
             AnimatedVisibility(visible = errorMessage != null) {
                 Text(
-                    text     = errorMessage ?: "",
-                    color    = MaterialTheme.colorScheme.error,
-                    style    = MaterialTheme.typography.bodySmall,
+                    text = errorMessage ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 6.dp)
@@ -161,16 +161,16 @@ fun LoginScreen(
 
             // Кнопка входа
             Button(
-                onClick  = { focusManager.clearFocus(); onLogin(email, password) },
-                enabled  = !isLoading,
+                onClick = { focusManager.clearFocus(); onLogin(email, password) },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier    = Modifier.size(22.dp),
-                        color       = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(22.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                 } else {
@@ -183,7 +183,7 @@ fun LoginScreen(
             //Ссылка на регистрацию
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text  = "Нет аккаунта?",
+                    text = "Нет аккаунта?",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

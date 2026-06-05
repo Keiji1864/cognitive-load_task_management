@@ -20,7 +20,7 @@ class SessionDataStore @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private object Keys {
-        val USER_ID      = longPreferencesKey("user_id")
+        val USER_ID = longPreferencesKey("user_id")
         val ENERGY_LEVEL = intPreferencesKey("energy_level")
     }
 
@@ -34,7 +34,7 @@ class SessionDataStore @Inject constructor(
 
     suspend fun saveSession(userId: Long, energyLevel: Int = 5) {
         context.dataStore.edit { prefs ->
-            prefs[Keys.USER_ID]      = userId
+            prefs[Keys.USER_ID] = userId
             prefs[Keys.ENERGY_LEVEL] = energyLevel
         }
     }

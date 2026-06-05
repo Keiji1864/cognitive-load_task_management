@@ -14,8 +14,8 @@ class SortTasksUseCase @Inject constructor() {
 
     operator fun invoke(tasks: List<Task>, order: SortOrder): List<Task> = when (order) {
         SortOrder.BY_IMPORTANCE -> tasks.sortedByDescending { it.importance }
-        SortOrder.BY_DEADLINE   -> tasks.sortedWith(compareBy(nullsLast()) { it.deadline })
-        SortOrder.BY_EFFORT     -> tasks.sortedBy { it.effort }
-        SortOrder.BY_CREATED    -> tasks.sortedByDescending { it.createdAt }
+        SortOrder.BY_DEADLINE -> tasks.sortedWith(compareBy(nullsLast()) { it.deadline })
+        SortOrder.BY_EFFORT -> tasks.sortedBy { it.effort }
+        SortOrder.BY_CREATED -> tasks.sortedByDescending { it.createdAt }
     }
 }

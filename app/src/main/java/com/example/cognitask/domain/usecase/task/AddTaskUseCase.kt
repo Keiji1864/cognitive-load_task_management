@@ -9,8 +9,8 @@ class AddTaskUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(task: Task): Result<Long> = runCatching {
         require(task.title.isNotBlank()) { "Название задачи не может быть пустым" }
-        require(task.importance in 1..5)  { "Важность: от 1 до 5" }
-        require(task.effort in 1..10)     { "Усилия: от 1 до 10" }
+        require(task.importance in 1..5) { "Важность: от 1 до 5" }
+        require(task.effort in 1..10) { "Усилия: от 1 до 10" }
         repository.insertTask(task)
     }
 }

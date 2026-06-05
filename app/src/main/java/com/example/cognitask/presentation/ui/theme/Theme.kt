@@ -11,17 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColors = lightColorScheme(
-    primary          = Purple40,
-    secondary        = Teal40,
-    tertiary         = Amber40,
-    background       = Background,
-    surface          = Surface
+    primary = Purple40,
+    secondary = Teal40,
+    tertiary = Amber40,
+    background = Background,
+    surface = Surface
 )
 
 private val DarkColors = darkColorScheme(
-    primary          = Purple80,
-    secondary        = Teal80,
-    tertiary         = Amber80
+    primary = Purple80,
+    secondary = Teal80,
+    tertiary = Amber80
 )
 
 @Composable
@@ -35,13 +35,14 @@ fun CogniTaskTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+
         darkTheme -> DarkColors
-        else      -> LightColors
+        else -> LightColors
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography  = CogniTypography,
-        content     = content
+        typography = CogniTypography,
+        content = content
     )
 }

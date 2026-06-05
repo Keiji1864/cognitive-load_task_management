@@ -39,7 +39,7 @@ class AuthViewModel @Inject constructor(
             loginUseCase(email, password)
                 .onSuccess { user ->
                     sessionDataStore.saveSession(
-                        userId      = user.id,
+                        userId = user.id,
                         energyLevel = user.energyLevel
                     )
                     _authState.value = AuthUiState.Success(user.id)

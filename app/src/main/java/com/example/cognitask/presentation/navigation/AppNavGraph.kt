@@ -19,8 +19,8 @@ import com.example.cognitask.presentation.ui.auth.AuthViewModel
 import com.example.cognitask.presentation.ui.auth.LoginScreen
 import com.example.cognitask.presentation.ui.auth.RegisterScreen
 import com.example.cognitask.presentation.ui.home.HomeScreen
-import com.example.cognitask.presentation.ui.tasks.TaskListScreen
 import com.example.cognitask.presentation.ui.tasks.TaskFormScreen
+import com.example.cognitask.presentation.ui.tasks.TaskListScreen
 
 @Composable
 fun AppNavGraph(
@@ -39,7 +39,7 @@ fun AppNavGraph(
     val startDestination = if (sessionUserId!! > 0L) Screen.Home.route else Screen.Login.route
 
     NavHost(
-        navController    = navController,
+        navController = navController,
         startDestination = startDestination
     ) {
 
@@ -48,9 +48,9 @@ fun AppNavGraph(
             val state by vm.authState.collectAsStateWithLifecycle()
 
             LoginScreen(
-                uiState             = state,
-                onLogin             = vm::login,
-                onLoginSuccess      = {
+                uiState = state,
+                onLogin = vm::login,
+                onLoginSuccess = {
                     vm.resetAuthState()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
@@ -67,8 +67,8 @@ fun AppNavGraph(
             val state by vm.authState.collectAsStateWithLifecycle()
 
             RegisterScreen(
-                uiState           = state,
-                onRegister        = vm::register,
+                uiState = state,
+                onRegister = vm::register,
                 onRegisterSuccess = {
                     vm.resetAuthState()
                     navController.navigate(Screen.Home.route) {
@@ -89,7 +89,7 @@ fun AppNavGraph(
                     }
                 },
                 onNavigateToTasks = { navController.navigate(Screen.TaskList.route) },
-                onNavigateToForm  = { taskId ->
+                onNavigateToForm = { taskId ->
                     navController.navigate(Screen.TaskForm.createRoute(taskId))
                 }
             )
@@ -106,7 +106,7 @@ fun AppNavGraph(
 
         //Форма задачи (taskId = -1 создание, иначе редактирование)
         composable(
-            route     = Screen.TaskForm.route,
+            route = Screen.TaskForm.route,
             arguments = listOf(
                 navArgument("taskId") { type = NavType.LongType; defaultValue = -1L }
             )

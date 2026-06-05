@@ -1,15 +1,49 @@
 package com.example.cognitask.presentation.ui.tasks
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,11 +60,11 @@ fun TaskFormScreen(
     onNavigateBack: () -> Unit,
     viewModel: TaskFormViewModel = hiltViewModel()
 ) {
-    val uiState   by viewModel.uiState.collectAsStateWithLifecycle()
-    val isLoading  = uiState is TaskFormUiState.Loading
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isLoading = uiState is TaskFormUiState.Loading
 
-    var showDatePicker      by remember { mutableStateOf(false) }
-    var showRecurrenceMenu  by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showRecurrenceMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState) {
         if (uiState is TaskFormUiState.Success) {
@@ -46,13 +80,13 @@ fun TaskFormScreen(
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
-            confirmButton    = {
+            confirmButton = {
                 TextButton(onClick = {
                     viewModel.deadline = pickerState.selectedDateMillis
-                    showDatePicker     = false
+                    showDatePicker = false
                 }) { Text("Выбрать") }
             },
-            dismissButton    = {
+            dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) { Text("Отмена") }
             }
         ) { DatePicker(state = pickerState) }
@@ -61,8 +95,8 @@ fun TaskFormScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title           = { Text(if (viewModel.isEditing) "Редактировать" else "Новая задача") },
-                navigationIcon  = {
+                title = { Text(if (viewModel.isEditing) "Редактировать" else "Новая задача") },
+                navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
                     }
@@ -71,7 +105,7 @@ fun TaskFormScreen(
         }
     ) { padding ->
         Column(
-            modifier            = Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(padding)
@@ -81,23 +115,23 @@ fun TaskFormScreen(
 
             // Название
             OutlinedTextField(
-                value         = viewModel.title,
+                value = viewModel.title,
                 onValueChange = { viewModel.title = it },
-                label         = { Text("Название *") },
-                singleLine    = true,
-                enabled       = !isLoading,
-                modifier      = Modifier.fillMaxWidth()
+                label = { Text("Название *") },
+                singleLine = true,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth()
             )
 
             // Описание
             OutlinedTextField(
-                value         = viewModel.description,
+                value = viewModel.description,
                 onValueChange = { viewModel.description = it },
-                label         = { Text("Описание") },
-                minLines      = 2,
-                maxLines      = 4,
-                enabled       = !isLoading,
-                modifier      = Modifier.fillMaxWidth()
+                label = { Text("Описание") },
+                minLines = 2,
+                maxLines = 4,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth()
             )
 
             // Важность 1–5
@@ -108,20 +142,20 @@ fun TaskFormScreen(
                 )
                 Spacer(Modifier.height(4.dp))
                 Row(
-                    modifier                = Modifier.fillMaxWidth(),
-                    horizontalArrangement   = Arrangement.SpaceBetween
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     (1..5).forEach { v ->
                         FilterChip(
                             selected = viewModel.importance == v,
-                            onClick  = { viewModel.importance = v },
-                            enabled  = !isLoading,
-                            label    = { Text(v.toString()) },
-                            colors   = FilterChipDefaults.filterChipColors(
+                            onClick = { viewModel.importance = v },
+                            enabled = !isLoading,
+                            label = { Text(v.toString()) },
+                            colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = when (v) {
-                                    5    -> MaterialTheme.colorScheme.error
-                                    4    -> MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
-                                    3    -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.85f)
+                                    5 -> MaterialTheme.colorScheme.error
+                                    4 -> MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                                    3 -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.85f)
                                     else -> MaterialTheme.colorScheme.secondaryContainer
                                 }
                             )
@@ -137,21 +171,25 @@ fun TaskFormScreen(
                     style = MaterialTheme.typography.labelLarge
                 )
                 Slider(
-                    value         = viewModel.effort.toFloat(),
+                    value = viewModel.effort.toFloat(),
                     onValueChange = { viewModel.effort = it.toInt() },
-                    valueRange    = 1f..10f,
-                    steps         = 8,
-                    enabled       = !isLoading,
-                    modifier      = Modifier.fillMaxWidth()
+                    valueRange = 1f..10f,
+                    steps = 8,
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Row(
-                    modifier              = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("1 — легко", style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("10 — очень тяжело", style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "1 — легко", style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        "10 — очень тяжело", style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -161,23 +199,32 @@ fun TaskFormScreen(
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedButton(
-                        onClick  = { showDatePicker = true },
-                        enabled  = !isLoading,
+                        onClick = { showDatePicker = true },
+                        enabled = !isLoading,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Filled.CalendarToday, null,
-                            modifier = Modifier.size(16.dp))
+                        Icon(
+                            Icons.Filled.CalendarToday, null,
+                            modifier = Modifier.size(16.dp)
+                        )
                         Spacer(Modifier.width(6.dp))
                         Text(
                             viewModel.deadline
-                                ?.let { SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(Date(it)) }
+                                ?.let {
+                                    SimpleDateFormat(
+                                        "dd MMMM yyyy",
+                                        Locale.getDefault()
+                                    ).format(Date(it))
+                                }
                                 ?: "Выбрать дату"
                         )
                     }
                     if (viewModel.deadline != null) {
                         IconButton(onClick = { viewModel.deadline = null }) {
-                            Icon(Icons.Filled.Close, "Убрать дедлайн",
-                                tint = MaterialTheme.colorScheme.outline)
+                            Icon(
+                                Icons.Filled.Close, "Убрать дедлайн",
+                                tint = MaterialTheme.colorScheme.outline
+                            )
                         }
                     }
                 }
@@ -188,29 +235,31 @@ fun TaskFormScreen(
                 Text("Повторение", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(4.dp))
                 ExposedDropdownMenuBox(
-                    expanded         = showRecurrenceMenu,
+                    expanded = showRecurrenceMenu,
                     onExpandedChange = { showRecurrenceMenu = it }
                 ) {
                     OutlinedTextField(
-                        value         = viewModel.recurrence.toLabel(),
+                        value = viewModel.recurrence.toLabel(),
                         onValueChange = {},
-                        readOnly      = true,
-                        enabled       = !isLoading,
-                        trailingIcon  = {
+                        readOnly = true,
+                        enabled = !isLoading,
+                        trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(showRecurrenceMenu)
                         },
-                        modifier      = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
-                        expanded         = showRecurrenceMenu,
+                        expanded = showRecurrenceMenu,
                         onDismissRequest = { showRecurrenceMenu = false }
                     ) {
                         Recurrence.entries.forEach { rec ->
                             DropdownMenuItem(
-                                text    = { Text(rec.toLabel()) },
+                                text = { Text(rec.toLabel()) },
                                 onClick = {
-                                    viewModel.recurrence  = rec
-                                    showRecurrenceMenu    = false
+                                    viewModel.recurrence = rec
+                                    showRecurrenceMenu = false
                                 }
                             )
                         }
@@ -220,13 +269,13 @@ fun TaskFormScreen(
 
             // Категория
             OutlinedTextField(
-                value         = viewModel.category,
+                value = viewModel.category,
                 onValueChange = { viewModel.category = it },
-                label         = { Text("Категория (необязательно)") },
-                placeholder   = { Text("Работа, учёба, спорт...") },
-                singleLine    = true,
-                enabled       = !isLoading,
-                modifier      = Modifier.fillMaxWidth()
+                label = { Text("Категория (необязательно)") },
+                placeholder = { Text("Работа, учёба, спорт...") },
+                singleLine = true,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth()
             )
 
             // Ошибка
@@ -242,14 +291,16 @@ fun TaskFormScreen(
 
             //Кнопка сохранить
             Button(
-                onClick  = viewModel::save,
-                enabled  = !isLoading && viewModel.title.isNotBlank(),
-                modifier = Modifier.fillMaxWidth().height(52.dp)
+                onClick = viewModel::save,
+                enabled = !isLoading && viewModel.title.isNotBlank(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier    = Modifier.size(22.dp),
-                        color       = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(22.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                 } else {
@@ -264,8 +315,8 @@ fun TaskFormScreen(
 }
 
 private fun Recurrence.toLabel() = when (this) {
-    Recurrence.NONE     -> "Не повторяется"
-    Recurrence.DAILY    -> "Каждый день"
-    Recurrence.WEEKLY   -> "Каждую неделю"
+    Recurrence.NONE -> "Не повторяется"
+    Recurrence.DAILY -> "Каждый день"
+    Recurrence.WEEKLY -> "Каждую неделю"
     Recurrence.BIWEEKLY -> "Каждые 2 недели"
 }

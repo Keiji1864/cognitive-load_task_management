@@ -2,8 +2,6 @@ package com.example.cognitask.data.local.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.cognitask.data.local.db.dao.TaskDao
 import com.example.cognitask.data.local.db.dao.UserDao
 import com.example.cognitask.data.local.db.entity.TaskEntity

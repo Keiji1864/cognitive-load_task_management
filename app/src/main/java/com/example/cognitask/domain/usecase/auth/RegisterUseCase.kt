@@ -32,10 +32,10 @@ class RegisterUseCase @Inject constructor(
         }
 
         val newUser = User(
-            name         = name.trim(),
-            email        = trimmedEmail,
+            name = name.trim(),
+            email = trimmedEmail,
             passwordHash = PasswordHasher.hash(password),
-            energyLevel  = 5
+            energyLevel = 5
         )
         val id = userRepository.insertUser(newUser)
         return Result.success(newUser.copy(id = id))
