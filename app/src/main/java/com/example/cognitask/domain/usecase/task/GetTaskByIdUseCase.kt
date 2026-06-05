@@ -1,10 +1,11 @@
 package com.example.cognitask.domain.usecase.task
 
+import com.example.cognitask.domain.model.Task
 import com.example.cognitask.domain.repository.TaskRepository
 import javax.inject.Inject
 
-class DeleteTaskUseCase @Inject constructor(
+class GetTaskByIdUseCase @Inject constructor(
     private val repository: TaskRepository
 ) {
-    suspend operator fun invoke(taskId: Long) = repository.deleteTaskById(taskId)
+    suspend operator fun invoke(id: Long): Task? = repository.getTaskById(id)
 }

@@ -1,2 +1,151 @@
 package com.example.cognitask.presentation.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.example.cognitask.domain.model.Recurrence
+import com.example.cognitask.domain.model.Task
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+@Composable
+fun TaskCard(
+    task: Task,
+    onToggleComplete: (Task) -> Unit,
+    onEdit: (Long) -> Unit,
+    onDelete: (Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val cardColor by animateColorAsState(
+        targetValue = if (task.isCompleted)
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        else
+            MaterialTheme.colorScheme.surface,
+        label = "cardColor"
+    )
+
+    Card(
+        modifier  = modifier
+            .fillMaxWidth()
+            .clickable { onEdit(task.id) },
+        shape     = RoundedCornerShape(12.dp),
+        colors    = CardDefaults.cardColors(containerColor = cardColor),
+        elevation = CardDefaults.cardElevation(if (task.isCompleted) 0.dp else 2.dp)
+    ) {
+        Row(
+            modifier          = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Чекбокс
+            IconButton(onClick = { onToggleComplete(task) }) {
+                Icon(
+                    imageVector = if (task.isCompleted)
+                        Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                    contentDescription = "Выполнено",
+                    tint = if (task.isCompleted)
+                        MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                // Название
+                Text(
+                    text            = task.title,
+                    style           = MaterialTheme.typography.titleSmall,
+                    textDecoration  = if (task.isCompleted) TextDecoration.LineThrough
+                    else TextDecoration.None,
+                    maxLines        = 1,
+                    overflow        = TextOverflow.Ellipsis
+                )
+                // Описание
+                if (task.description.isNotBlank()) {
+                    Text(
+                        text     = task.description,
+                        style    = MaterialTheme.typography.bodySmall,
+                        color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                // Бейджи
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    SuggestionChip(
+                        onClick = {},
+                        label   = {
+                            Text(
+                                "★ ${task.importance}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = importanceColor(task.importance)
+                            )
+                        }
+                    )
+                    SuggestionChip(
+                        onClick = {},
+                        label   = { Text("⚡ ${task.effort}/10",
+                            style = MaterialTheme.typography.labelSmall) }
+                    )
+                    task.deadline?.let {
+                        SuggestionChip(
+                            onClick = {},
+                            label   = {
+                                Text(
+                                    SimpleDateFormat("dd.MM.yy", Locale.getDefault()).format(Date(it)),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        )
+                    }
+                    if (task.recurrence != Recurrence.NONE) {
+                        SuggestionChip(
+                            onClick = {},
+                            label   = {
+                                Text(
+                                    when (task.recurrence) {
+                                        Recurrence.DAILY    -> "🔁 День"
+                                        Recurrence.WEEKLY   -> "🔁 Нед."
+                                        Recurrence.BIWEEKLY -> "🔁 2 нед."
+                                        else                -> ""
+                                    },
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
+            IconButton(onClick = { onEdit(task.id) }) {
+                Icon(Icons.Filled.Edit, "Редактировать",
+                    tint = MaterialTheme.colorScheme.primary)
+            }
+            IconButton(onClick = { onDelete(task.id) }) {
+                Icon(Icons.Filled.Delete, "Удалить",
+                    tint = MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+}
+
+@Composable
+private fun importanceColor(importance: Int) = when (importance) {
+    5    -> MaterialTheme.colorScheme.error
+    4    -> MaterialTheme.colorScheme.error.copy(alpha = 0.75f)
+    3    -> MaterialTheme.colorScheme.tertiary
+    else -> MaterialTheme.colorScheme.outline
+}

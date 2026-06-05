@@ -19,6 +19,8 @@ import com.example.cognitask.presentation.ui.auth.AuthViewModel
 import com.example.cognitask.presentation.ui.auth.LoginScreen
 import com.example.cognitask.presentation.ui.auth.RegisterScreen
 import com.example.cognitask.presentation.ui.home.HomeScreen
+import com.example.cognitask.presentation.ui.tasks.TaskListScreen
+import com.example.cognitask.presentation.ui.tasks.TaskFormScreen
 
 @Composable
 fun AppNavGraph(
@@ -82,14 +84,23 @@ fun AppNavGraph(
         //Главный экран
         composable(Screen.Home.route) {
             val vm: AuthViewModel = hiltViewModel()
-
             HomeScreen(
                 onLogout = {
                     vm.logout()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                onNavigateToTasks = { navController.navigate(Screen.TaskList.route) }
+            )
+        }
+
+        composable(Screen.TaskList.route) {
+            TaskListScreen(
+                onNavigateToForm = { taskId ->
+                    navController.navigate(Screen.TaskForm.createRoute(taskId))
+                },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -97,16 +108,10 @@ fun AppNavGraph(
         composable(
             route     = Screen.TaskForm.route,
             arguments = listOf(
-                navArgument("taskId") {
-                    type         = NavType.LongType
-                    defaultValue = -1L
-                }
+                navArgument("taskId") { type = NavType.LongType; defaultValue = -1L }
             )
         ) {
-            // Будет реализован
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                androidx.compose.material3.Text("TaskFormScreen, День 3")
-            }
+            TaskFormScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }
