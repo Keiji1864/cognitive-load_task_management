@@ -1,7 +1,7 @@
 package com.example.cognitask.presentation.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cognitask.presentation.ui.theme.energyColor
 
 @Composable
 fun EnergySelector(
@@ -32,6 +33,7 @@ fun EnergySelector(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -54,7 +56,6 @@ fun EnergySelector(
 
         Spacer(Modifier.height(10.dp))
 
-        // 10 делений
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -63,24 +64,20 @@ fun EnergySelector(
                 val filled = level <= value
                 val isSelected = level == value
 
-                val targetColor = when {
-                    !filled -> Color.Transparent
-                    level <= 3 -> Color(0xFFEF5350)   // красный  - мало сил
-                    level <= 6 -> Color(0xFFFFA726)   // желтый - средне
-                    else -> Color(0xFF66BB6A)   // зелёный  - много сил
-                }
+                val targetColor: Color = if (filled) energyColor(level)
+                else Color.Transparent
+
                 val bgColor by animateColorAsState(
                     targetValue = targetColor,
-                    animationSpec = tween(200),
+                    animationSpec = spring(),
                     label = "energy_$level"
                 )
-                val borderColor = MaterialTheme.colorScheme.outlineVariant
 
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(if (isSelected) 38.dp else 30.dp)
-                        .clip(RoundedCornerShape(6.dp))
+                        .height(if (isSelected) 40.dp else 30.dp)
+                        .clip(RoundedCornerShape(8.dp))
                         .background(
                             if (filled) bgColor
                             else MaterialTheme.colorScheme.surfaceVariant
@@ -100,7 +97,6 @@ fun EnergySelector(
             }
         }
 
-        // Подписи
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -134,5 +130,5 @@ private fun energyLabel(v: Int) = when {
     v <= 4 -> "Немного устал"
     v <= 6 -> "Нормальный день"
     v <= 8 -> "Хорошая форма"
-    else -> "Готов горы свернуть"
+    else -> "Невозможное возможно"
 }
