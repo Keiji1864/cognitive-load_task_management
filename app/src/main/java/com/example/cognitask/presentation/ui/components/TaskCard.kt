@@ -20,7 +20,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,7 +63,6 @@ fun TaskCard(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Чекбокс
             IconButton(onClick = { onToggleComplete(task) }) {
                 Icon(
                     imageVector = if (task.isCompleted)
@@ -75,7 +74,6 @@ fun TaskCard(
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                // Название
                 Text(
                     text = task.title,
                     style = MaterialTheme.typography.titleSmall,
@@ -84,7 +82,6 @@ fun TaskCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                // Описание
                 if (task.description.isNotBlank()) {
                     Text(
                         text = task.description,
@@ -94,55 +91,30 @@ fun TaskCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+
                 Spacer(Modifier.height(4.dp))
-                // Бейджи
+
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    SuggestionChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                "★ ${task.importance}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = importanceColor(task.importance)
-                            )
-                        }
+                    InfoPill(
+                        text = "★ ${task.importance}",
+                        color = importanceColor(task.importance)
                     )
-                    SuggestionChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                "⚡ ${task.effort}/10",
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    )
+                    InfoPill(text = "⚡ ${task.effort}/10")
                     task.deadline?.let {
-                        SuggestionChip(
-                            onClick = {},
-                            label = {
-                                Text(
-                                    SimpleDateFormat(
-                                        "dd.MM.yy",
-                                        Locale.getDefault()
-                                    ).format(Date(it)),
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
+                        InfoPill(
+                            text = SimpleDateFormat(
+                                "dd.MM.yy",
+                                Locale.getDefault()
+                            ).format(Date(it))
                         )
                     }
                     if (task.recurrence != Recurrence.NONE) {
-                        SuggestionChip(
-                            onClick = {},
-                            label = {
-                                Text(
-                                    when (task.recurrence) {
-                                        Recurrence.DAILY -> "🔁 День"
-                                        Recurrence.WEEKLY -> "🔁 Нед."
-                                        Recurrence.BIWEEKLY -> "🔁 2 нед."
-                                        else -> ""
-                                    },
-                                    style = MaterialTheme.typography.labelSmall
-                                )
+                        InfoPill(
+                            text = when (task.recurrence) {
+                                Recurrence.DAILY -> "День"
+                                Recurrence.WEEKLY -> "Нед."
+                                Recurrence.BIWEEKLY -> "2 нед."
+                                else -> ""
                             }
                         )
                     }
@@ -171,4 +143,23 @@ private fun importanceColor(importance: Int) = when (importance) {
     4 -> MaterialTheme.colorScheme.error.copy(alpha = 0.75f)
     3 -> MaterialTheme.colorScheme.tertiary
     else -> MaterialTheme.colorScheme.outline
+}
+
+@Composable
+private fun InfoPill(
+    text: String,
+    color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant
+) {
+    if (text.isBlank()) return
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = color.copy(alpha = 0.12f)
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = color
+        )
+    }
 }

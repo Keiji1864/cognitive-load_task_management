@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.AlertDialog
@@ -52,7 +51,6 @@ fun TaskListScreen(
     var showSortMenu by remember { mutableStateOf(false) }
     var deleteTaskId by remember { mutableStateOf<Long?>(null) }
 
-    // Диалог удаления
     deleteTaskId?.let { id ->
         AlertDialog(
             onDismissRequest = { deleteTaskId = null },
@@ -73,11 +71,6 @@ fun TaskListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Мои задачи") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
-                    }
-                },
                 actions = {
                     Box {
                         IconButton(onClick = { showSortMenu = true }) {
@@ -128,7 +121,7 @@ fun TaskListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Задач пока нет", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Нажми + чтобы добавить первую",
+                        "Нажми + чтобы добавить новую",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

@@ -70,17 +70,11 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            "CogniTask", style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            "Умное планирование дня",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                        )
-                    }
+                    Text(
+                        "CogniTask",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -117,8 +111,6 @@ fun HomeScreen(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-            // Блок выбора уровня сил
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -134,7 +126,6 @@ fun HomeScreen(
                 }
             }
 
-            // Блок «Сегодня рекомендовано»
             item {
                 RecommendedHeader(
                     count = state.recommended.size,
@@ -159,7 +150,6 @@ fun HomeScreen(
                 }
             }
 
-            // Остальные задачи
             if (state.otherActive.isNotEmpty()) {
                 item {
                     Row(
@@ -178,7 +168,9 @@ fun HomeScreen(
                                 Icons.AutoMirrored.Filled.List, null,
                                 modifier = Modifier.size(16.dp)
                             )
+
                             Spacer(Modifier.width(4.dp))
+
                             Text("Все задачи")
                         }
                     }
@@ -227,7 +219,9 @@ private fun RecommendedHeader(count: Int, energyLevel: Int) {
                     tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(20.dp)
                 )
+
                 Spacer(Modifier.width(6.dp))
+
                 Text(
                     "Сегодня рекомендовано",
                     style = MaterialTheme.typography.titleMedium,
@@ -259,15 +253,20 @@ private fun RecommendedTaskCard(
     onToggle: () -> Unit,
     onEdit: () -> Unit
 ) {
-    val accentColor = MaterialTheme.colorScheme.tertiary
+    val accentColor = when (task.importance) {
+        5 -> MaterialTheme.colorScheme.primary
+        4 -> MaterialTheme.colorScheme.secondary
+        3 -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.outlineVariant
+    }
 
     Card(
         onClick = onEdit,
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -281,6 +280,7 @@ private fun RecommendedTaskCard(
                     .clip(RoundedCornerShape(2.dp))
                     .background(accentColor)
             )
+
             Spacer(Modifier.width(12.dp))
 
             Column(Modifier.weight(1f)) {
@@ -322,8 +322,8 @@ private fun RecommendedTaskCard(
 @Composable
 private fun ImportancePill(importance: Int) {
     val color = when (importance) {
-        5 -> MaterialTheme.colorScheme.error
-        4 -> MaterialTheme.colorScheme.error.copy(alpha = 0.75f)
+        5 -> MaterialTheme.colorScheme.primary
+        4 -> MaterialTheme.colorScheme.secondary
         3 -> MaterialTheme.colorScheme.tertiary
         else -> MaterialTheme.colorScheme.outline
     }
