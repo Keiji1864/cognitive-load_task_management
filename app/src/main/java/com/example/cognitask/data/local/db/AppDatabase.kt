@@ -10,7 +10,7 @@ import com.example.cognitask.data.local.db.entity.UserEntity
 @Database(
     entities = [UserEntity::class, TaskEntity::class],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -19,16 +19,5 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         const val DATABASE_NAME = "cognitask.db"
-
-        /**
-         * Пример миграции v1 → v2 (раскомментировать при необходимости).
-         * При добавлении новых полей — не менять существующие entity без новой миграции!
-         *
-         * val MIGRATION_1_2 = object : Migration(1, 2) {
-         *     override fun migrate(db: SupportSQLiteDatabase) {
-         *         db.execSQL("ALTER TABLE tasks ADD COLUMN some_new_column TEXT NOT NULL DEFAULT ''")
-         *     }
-         * }
-         */
     }
 }

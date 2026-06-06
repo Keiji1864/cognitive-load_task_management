@@ -8,9 +8,7 @@ plugins {
 
 android {
     namespace = "com.example.cognitask"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.cogni_load"
@@ -41,9 +39,9 @@ android {
     buildFeatures {
         compose = true
     }
-    ksp {
-        arg("room.schemaLocation", "$projectDir/schemas")
-    }
+//    ksp {
+//        arg("room.schemaLocation", "$projectDir/schemas")
+//    }
 }
 
 dependencies {
