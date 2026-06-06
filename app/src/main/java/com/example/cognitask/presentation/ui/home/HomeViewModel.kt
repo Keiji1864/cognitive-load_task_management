@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cognitask.data.local.datastore.SessionDataStore
 import com.example.cognitask.domain.model.Task
+import com.example.cognitask.domain.repository.UserRepository
 import com.example.cognitask.domain.usecase.smartpick.SmartPickUseCase
 import com.example.cognitask.domain.usecase.task.GetTasksUseCase
 import com.example.cognitask.domain.usecase.task.UpdateTaskUseCase
@@ -25,35 +26,42 @@ data class HomeUiState(
     val userName: String = ""
 )
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getTasksUseCase: GetTasksUseCase,
     private val smartPickUseCase: SmartPickUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
-    private val sessionDataStore: SessionDataStore
+    private val sessionDataStore: SessionDataStore,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<HomeUiState> = combine(
-        sessionDataStore.userId
-            .filter { it != -1L }
-            .flatMapLatest { uid -> getTasksUseCase(uid) },
-        sessionDataStore.energyLevel
-    ) { taskList, energy ->
-        val active = taskList.filter { !it.isCompleted }
-        val recommended = smartPickUseCase(active, energy)
-        val recommendedIds = recommended.map { it.id }.toSet()
+    val uiState: StateFlow<HomeUiState> = sessionDataStore.userId
+        .filter { it != -1L }
+        .flatMapLatest { uid ->
+            combine(
+                getTasksUseCase(uid),
+                sessionDataStore.energyLevel
+            ) { taskList, energy ->
+                val active = taskList.filter { !it.isCompleted }
+                val recommended = smartPickUseCase(active, energy)
+                val recommendedIds = recommended.map { it.id }.toSet()
+                val user = userRepository.getUserById(uid)
 
-        HomeUiState(
-            recommended = recommended,
-            otherActive = active.filter { it.id !in recommendedIds },
-            energyLevel = energy,
-            isLoading = false
+                HomeUiState(
+                    recommended = recommended,
+                    otherActive = active.filter { it.id !in recommendedIds },
+                    energyLevel = energy,
+                    userName = user?.name ?: "",
+                    isLoading = false
+                )
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = HomeUiState()
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = HomeUiState()
-    )
 
     fun updateEnergy(level: Int) {
         viewModelScope.launch {
