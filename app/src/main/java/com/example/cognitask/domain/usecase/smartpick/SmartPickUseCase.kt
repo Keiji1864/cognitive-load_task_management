@@ -7,10 +7,7 @@ import javax.inject.Inject
 
 class SmartPickUseCase @Inject constructor() {
 
-    operator fun invoke(
-        tasks: List<Task>,
-        energyLevel: Int        // 1–10
-    ): List<Task> {
+    operator fun invoke(tasks: List<Task>, energyLevel: Int): List<Task> {
         val now = System.currentTimeMillis()
         val today = Calendar.getInstance()
 
@@ -22,32 +19,36 @@ class SmartPickUseCase @Inject constructor() {
             .map { (task, _) -> task }
     }
 
-    // Сколько задач рекомендовать в зависимости от сил
     private fun pickCount(energy: Int) = when {
         energy <= 3 -> 2
         energy <= 7 -> 3
         else -> 4
     }
 
-    private fun score(task: Task, energy: Int, nowMs: Long, today: Calendar): Float =
-        importanceScore(task.importance) * W_IMPORTANCE +
-                deadlineScore(task.deadline, nowMs) * W_DEADLINE +
-                energyMatchScore(task.effort, energy) * W_ENERGY +
-                recurrenceScore(task, today) * W_RECURRENCE
+    private fun score(task: Task, energy: Int, nowMs: Long, today: Calendar): Float {
+        val raw =
+            importanceScore(task.importance) * W_IMPORTANCE +
+                    deadlineScore(task.deadline, nowMs) * W_DEADLINE +
+                    recurrenceScore(task, today) * W_RECURRENCE +
+                    energyMatchScore(task.effort, energy) * W_ENERGY
 
-    // Компоненты оценки
+        val overloadPenalty = if (task.effort > energy) {
+            val excess = task.effort - energy
+            maxOf(0.10f, 1f - excess * 0.15f)
+        } else 1f
 
-    // importance 1-5 → 0.0-1.0
+        return raw * overloadPenalty
+    }
+
     private fun importanceScore(importance: Int) = (importance - 1) / 4f
 
-    // Чем ближе дедлайн, тем выше оценка; без дедлайна 0
     private fun deadlineScore(deadline: Long?, nowMs: Long): Float {
         deadline ?: return 0f
         val days = (deadline - nowMs) / MS_DAY
         return when {
-            days < 0 -> 1.00f    // просрочено
-            days == 0L -> 0.95f    // сегодня
-            days == 1L -> 0.85f    // завтра
+            days < 0 -> 1.00f
+            days == 0L -> 0.95f
+            days == 1L -> 0.85f
             days <= 3 -> 0.70f
             days <= 7 -> 0.50f
             days <= 14 -> 0.30f
@@ -55,13 +56,11 @@ class SmartPickUseCase @Inject constructor() {
         }
     }
 
-    // Если усилий нужно меньше или столько же, сколько есть сил, то задача подходит
-    // Чем сильнее задача превышает уровень сил, тем больше штраф
     private fun energyMatchScore(effort: Int, energy: Int): Float =
         if (effort <= energy) {
             1f - ((energy - effort) / 20f).coerceIn(0f, 0.25f)
         } else {
-            maxOf(0f, 1f - (effort - energy) / 5f)
+            0f
         }
 
     private fun recurrenceScore(task: Task, today: Calendar): Float = when (task.recurrence) {
