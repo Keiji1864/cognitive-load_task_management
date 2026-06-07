@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,6 +37,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +57,28 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Выйти из аккаунта?") },
+            text = { Text("Вы уверены, что хотите выйти? Данные останутся сохранены.") },
+            confirmButton = {
+                Button(
+                    onClick = { showLogoutDialog = false; onLogout() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) { Text("Выйти") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { showLogoutDialog = false }
+                ) { Text("Отмена") }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -63,7 +90,7 @@ fun ProfileScreen(
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 actions = {
-                    IconButton(onClick = onLogout) {
+                    IconButton(onClick = { showLogoutDialog = true }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ExitToApp, "Выйти",
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
@@ -94,7 +121,6 @@ fun ProfileScreen(
 
             AvatarCircle(name = state.name)
 
-            // Имя, email
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     state.name,
@@ -108,7 +134,6 @@ fun ProfileScreen(
                 )
             }
 
-            // Статистика
             StatsCard(
                 total = state.totalTasks,
                 active = state.totalTasks - state.completedTasks,
@@ -117,7 +142,6 @@ fun ProfileScreen(
 
             HorizontalDivider()
 
-            // Уровень сил
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
@@ -133,9 +157,8 @@ fun ProfileScreen(
 
             Spacer(Modifier.weight(1f))
 
-            // Выйти
             OutlinedButton(
-                onClick = onLogout,
+                onClick = { showLogoutDialog = true },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.error

@@ -60,7 +60,8 @@ class SmartPickUseCase @Inject constructor() {
         if (effort <= energy) {
             1f - ((energy - effort) / 20f).coerceIn(0f, 0.25f)
         } else {
-            0f
+            val overload = (effort - energy).toFloat() / energy.toFloat()
+            maxOf(0f, 1f - overload)
         }
 
     private fun recurrenceScore(task: Task, today: Calendar): Float = when (task.recurrence) {

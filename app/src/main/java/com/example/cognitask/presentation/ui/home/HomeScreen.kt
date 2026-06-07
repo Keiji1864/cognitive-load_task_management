@@ -22,8 +22,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
@@ -48,6 +53,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -55,14 +61,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cognitask.domain.model.Task
 import com.example.cognitask.presentation.ui.components.EnergySelector
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +83,12 @@ fun HomeScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("✨ Рекомендации", "📋 План дня")
+
+    LaunchedEffect(state.isLoading) {
+        if (!state.isLoading && state.dailyPlan.isNotEmpty()) {
+            selectedTab = 1
+        }
+    }
 
     if (state.showConfirmDialog) {
         AlertDialog(
@@ -82,8 +96,8 @@ fun HomeScreen(
             title = { Text("Подтвердить план дня?") },
             text = {
                 Text(
-                    "Выбрано целей на сегодня: ${state.pendingSelection.size}\n\n" +
-                            "Задачи переместятся в «План дня» для выполнения."
+                    "Выбрано задач: ${state.pendingSelection.size}\n\n" +
+                            "Задачи переместятся в «План дня»."
                 )
             },
             confirmButton = {
@@ -105,7 +119,8 @@ fun HomeScreen(
                 title = {
                     Column {
                         Text(
-                            "CogniTask", style = MaterialTheme.typography.titleLarge,
+                            "CogniTask",
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         if (state.userName.isNotBlank()) {
@@ -143,7 +158,11 @@ fun HomeScreen(
                 .padding(padding)
         ) {
             TabRow(selectedTabIndex = selectedTab) {
-                tabs.forEachIndexed { index, title ->
+                val tabIcons: List<ImageVector> =
+                    listOf(Icons.Filled.AutoAwesome, Icons.Filled.CalendarMonth)
+                val tabLabels = listOf("Рекомендации", "План дня")
+
+                tabLabels.forEachIndexed { index, label ->
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
@@ -152,11 +171,24 @@ fun HomeScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Text(title)
-                                val count = if (index == 0) state.recommended.size
-                                else state.dailyPlan.size
-                                if (count > 0) {
-                                    Badge { Text(count.toString()) }
+                                Icon(
+                                    tabIcons[index],
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(label)
+                                val badgeCount =
+                                    if (index == 0) state.recommended.size
+                                    else state.dailyPlan.count { !it.isCompleted }
+                                if (badgeCount > 0) {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.primary
+                                    ) {
+                                        Text(
+                                            badgeCount.toString(),
+                                            color = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -244,9 +276,7 @@ private fun RecommendationsTab(
                     )
                 }
                 if (state.recommended.isNotEmpty()) {
-                    TextButton(onClick = onAddAll) {
-                        Text("Выбрать все")
-                    }
+                    TextButton(onClick = onAddAll) { Text("Выбрать все") }
                 }
             }
         }
@@ -266,7 +296,11 @@ private fun RecommendationsTab(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("✨", fontSize = 28.sp)
+                        Icon(
+                            Icons.Filled.AutoAwesome, null,
+                            modifier = Modifier.size(36.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                         Spacer(Modifier.height(8.dp))
                         Text(
                             "Нет задач для рекомендаций",
@@ -312,10 +346,7 @@ private fun RecommendationsTab(
         }
 
         item {
-            TextButton(
-                onClick = onNavigateToTasks,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            TextButton(onClick = onNavigateToTasks, modifier = Modifier.fillMaxWidth()) {
                 Text("Выбрать из всех задач")
             }
         }
@@ -330,8 +361,7 @@ private fun RecommendationCard(
     isPending: Boolean,
     onToggle: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }  // ← без ripple
-
+    val interactionSource = remember { MutableInteractionSource() }
     val borderColor = if (isPending) MaterialTheme.colorScheme.primary
     else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
     val bgColor = if (isPending)
@@ -350,11 +380,7 @@ private fun RecommendationCard(
                 color = borderColor,
                 shape = RoundedCornerShape(14.dp)
             )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onToggle
-            )
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onToggle)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -388,21 +414,27 @@ private fun RecommendationCard(
                         shape = RoundedCornerShape(50),
                         color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
                     ) {
-                        Text(
-                            "★${task.importance}",
+                        Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall
-                        )
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(Icons.Filled.Star, null, modifier = Modifier.size(10.dp))
+                            Text("${task.importance}", style = MaterialTheme.typography.labelSmall)
+                        }
                     }
                     Surface(
                         shape = RoundedCornerShape(50),
                         color = MaterialTheme.colorScheme.secondaryContainer
                     ) {
-                        Text(
-                            "⚡${task.effort}",
+                        Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall
-                        )
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(Icons.Filled.Bolt, null, modifier = Modifier.size(10.dp))
+                            Text("${task.effort}", style = MaterialTheme.typography.labelSmall)
+                        }
                     }
                 }
             }
@@ -410,9 +442,7 @@ private fun RecommendationCard(
             Checkbox(
                 checked = isPending,
                 onCheckedChange = { onToggle() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary
-                )
+                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
             )
         }
     }
@@ -471,6 +501,7 @@ private fun DailyPlanTab(
         } else {
             val done = state.dailyPlan.count { it.isCompleted }
             val total = state.dailyPlan.size
+
             item {
                 Column {
                     Row(
@@ -497,6 +528,10 @@ private fun DailyPlanTab(
                             .clip(RoundedCornerShape(3.dp))
                     )
                 }
+            }
+
+            if (done == total && total > 0) {
+                item { MotivationCard() }
             }
 
             val active = state.dailyPlan.filter { !it.isCompleted }
@@ -553,18 +588,13 @@ private fun PlanTaskCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(
-                start = 4.dp, end = 4.dp,
-                top = 8.dp, bottom = 8.dp
-            ),
+            modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
                 checked = task.isCompleted,
                 onCheckedChange = { onComplete(task) },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary
-                )
+                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
             )
 
             Column(Modifier.weight(1f)) {
@@ -575,6 +605,35 @@ private fun PlanTaskCard(
                     textDecoration = if (task.isCompleted) TextDecoration.LineThrough
                     else TextDecoration.None
                 )
+                if (task.description.isNotBlank()) {
+                    Text(
+                        task.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2
+                    )
+                }
+                task.deadline?.let { deadline ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(top = 2.dp)
+                    ) {
+                        Icon(
+                            Icons.Outlined.CalendarToday, null,
+                            modifier = Modifier.size(12.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            SimpleDateFormat(
+                                "dd.MM.yyyy",
+                                Locale.getDefault()
+                            ).format(Date(deadline)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.padding(top = 4.dp)
@@ -583,11 +642,14 @@ private fun PlanTaskCard(
                         shape = RoundedCornerShape(50),
                         color = MaterialTheme.colorScheme.secondaryContainer
                     ) {
-                        Text(
-                            "⚡${task.effort}",
+                        Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall
-                        )
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(Icons.Filled.Bolt, null, modifier = Modifier.size(10.dp))
+                            Text("${task.effort}", style = MaterialTheme.typography.labelSmall)
+                        }
                     }
                     if (!task.isCompleted) {
                         Surface(
@@ -617,6 +679,42 @@ private fun PlanTaskCard(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun MotivationCard() {
+    val messages = listOf(
+        "Всё сделано! Вы молодцы, так держать!",
+        "День пройден на 100%! Гордитесь собой, но не забывайте, что любой результат — это всё ещё результат",
+        "Невероятно! Все задачи выполнены!"
+    )
+    val msg = remember { messages.random() }
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                Icons.Filled.EmojiEvents, null,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Text(
+                msg,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
     }
 }
