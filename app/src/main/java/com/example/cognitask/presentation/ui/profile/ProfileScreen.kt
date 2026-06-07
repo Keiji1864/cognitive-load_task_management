@@ -57,6 +57,7 @@ fun ProfileScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Профиль") },
+                expandedHeight = 48.dp,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

@@ -84,6 +84,7 @@ fun TaskListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Мои задачи") },
+                expandedHeight = 48.dp,
                 actions = {
                     if (categories.isNotEmpty()) {
                         Box {
