@@ -65,10 +65,9 @@ fun TaskCard(
 ) {
     val cardColor by animateColorAsState(
         targetValue = when {
-            isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-            isInPlan -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.20f)
+            isSelected      -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
             task.isCompleted -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            else -> MaterialTheme.colorScheme.surface
+            else            -> MaterialTheme.colorScheme.surface
         },
         label = "cardColor"
     )
@@ -81,17 +80,10 @@ fun TaskCard(
         label = "checkScale"
     )
 
-    val borderMod = when {
-        isSelected -> Modifier.border(
-            2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)
-        )
-
-        isInPlan -> Modifier.border(
-            1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(12.dp)
-        )
-
-        else -> Modifier
-    }
+    val borderMod = if (isSelected)
+        Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
+    else
+        Modifier
 
     Card(
         modifier = modifier

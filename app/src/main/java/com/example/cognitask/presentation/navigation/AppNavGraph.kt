@@ -1,6 +1,7 @@
 package com.example.cognitask.presentation.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,6 +52,7 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
     val currentRoute = currentEntry?.destination?.route
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (currentRoute in BOTTOM_BAR_ROUTES) {
                 BottomNavBar(navController)
