@@ -386,8 +386,10 @@ private fun RecommendationCard(
     onToggle: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+
     val borderColor = if (isPending) MaterialTheme.colorScheme.primary
     else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+
     val bgColor = if (isPending)
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     else
@@ -399,10 +401,12 @@ private fun RecommendationCard(
         elevation = CardDefaults.cardElevation(if (isPending) 4.dp else 1.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                width = if (isPending) 2.dp else 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(14.dp)
+            .then(
+                if (isPending) Modifier.border(
+                    width = 2.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(14.dp)
+                ) else Modifier
             )
             .clickable(interactionSource = interactionSource, indication = null, onClick = onToggle)
     ) {

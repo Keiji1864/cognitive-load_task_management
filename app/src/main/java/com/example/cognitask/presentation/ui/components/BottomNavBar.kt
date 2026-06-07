@@ -54,8 +54,7 @@ fun BottomNavBar(navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 14.dp)
+            .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
