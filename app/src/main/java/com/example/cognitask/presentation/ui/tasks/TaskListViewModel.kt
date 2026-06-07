@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cognitask.data.local.datastore.SessionDataStore
 import com.example.cognitask.domain.model.Task
+import com.example.cognitask.domain.usecase.task.AddToDailyPlanUseCase
 import com.example.cognitask.domain.usecase.task.DeleteTaskUseCase
 import com.example.cognitask.domain.usecase.task.GetTasksUseCase
 import com.example.cognitask.domain.usecase.task.SortTasksUseCase
@@ -31,11 +32,12 @@ class TaskListViewModel @Inject constructor(
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val sortTasksUseCase: SortTasksUseCase,
+    private val addToDailyPlanUseCase: AddToDailyPlanUseCase,
     private val sessionDataStore: SessionDataStore
 ) : ViewModel() {
 
     private val _sortOrder = MutableStateFlow(SortTasksUseCase.SortOrder.BY_CREATED)
-    private val _selectedCategory = MutableStateFlow<String?>(null)  // null = все
+    private val _selectedCategory = MutableStateFlow<String?>(null)
 
     val sortOrder: StateFlow<SortTasksUseCase.SortOrder> = _sortOrder.asStateFlow()
     val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
@@ -54,9 +56,7 @@ class TaskListViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val tasks: StateFlow<List<Task>> = combine(
-        allTasks,
-        _sortOrder,
-        _selectedCategory
+        allTasks, _sortOrder, _selectedCategory
     ) { taskList, order, category ->
         val filtered = if (category == null) taskList
         else taskList.filter { it.category.normalizeYo() == category }
@@ -81,5 +81,9 @@ class TaskListViewModel @Inject constructor(
 
     fun deleteTask(taskId: Long) {
         viewModelScope.launch { deleteTaskUseCase(taskId) }
+    }
+
+    fun addToPlan(taskIds: List<Long>) {
+        viewModelScope.launch { addToDailyPlanUseCase.addAll(taskIds) }
     }
 }

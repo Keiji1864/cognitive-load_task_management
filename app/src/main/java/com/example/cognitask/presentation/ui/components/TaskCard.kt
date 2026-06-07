@@ -4,6 +4,9 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -37,7 +41,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.cognitask.domain.model.Recurrence
@@ -46,20 +52,26 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun TaskCard(
     task: Task,
     onToggleComplete: (Task) -> Unit,
     onEdit: (Long) -> Unit,
     onDelete: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
+    isInPlan: Boolean = false,
+    onClick: () -> Unit = { onEdit(task.id) },
+    onLongClick: () -> Unit = {}
 ) {
     val cardColor by animateColorAsState(
-        targetValue = if (task.isCompleted)
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        else
-            MaterialTheme.colorScheme.surface,
+        targetValue = when {
+            isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+            isInPlan -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.20f)
+            task.isCompleted -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            else -> MaterialTheme.colorScheme.surface
+        },
         label = "cardColor"
     )
     val scale by animateFloatAsState(
@@ -71,12 +83,32 @@ fun TaskCard(
         label = "checkScale"
     )
 
+    val borderMod = when {
+        isSelected -> Modifier.border(
+            2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)
+        )
+
+        isInPlan -> Modifier.border(
+            1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(12.dp)
+        )
+
+        else -> Modifier
+    }
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(borderMod)
+            .clip(RoundedCornerShape(12.dp))
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = if (!isInPlan) onLongClick else null
+            ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor),
-        elevation = CardDefaults.cardElevation(if (task.isCompleted) 0.dp else 2.dp),
-        onClick = { onEdit(task.id) }
+        elevation = CardDefaults.cardElevation(
+            if (task.isCompleted || isInPlan) 0.dp else 2.dp
+        )
     ) {
         Row(
             modifier = Modifier.padding(start = 4.dp, end = 0.dp, top = 8.dp, bottom = 8.dp),
@@ -93,10 +125,8 @@ fun TaskCard(
                     imageVector = if (task.isCompleted)
                         Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
                     contentDescription = "Выполнено",
-                    tint = if (task.isCompleted)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.outline,
+                    tint = if (task.isCompleted) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -106,12 +136,33 @@ fun TaskCard(
                     .weight(1f)
                     .padding(vertical = 2.dp)
             ) {
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough
-                    else TextDecoration.None
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = task.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        textDecoration = if (task.isCompleted) TextDecoration.LineThrough
+                        else TextDecoration.None,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (isInPlan) {
+                        Icon(
+                            Icons.Filled.CalendarMonth, "В плане дня",
+                            modifier = Modifier
+                                .size(14.dp)
+                                .padding(start = 4.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    if (isSelected) {
+                        Icon(
+                            Icons.Filled.CheckCircle, "Выбрано",
+                            modifier = Modifier
+                                .size(14.dp)
+                                .padding(start = 4.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
 
                 if (task.description.isNotBlank()) {
                     Text(
@@ -129,27 +180,21 @@ fun TaskCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     InfoPill(
-                        icon = Icons.Filled.Star,
-                        text = "${task.importance}",
-                        color = importanceColor(task.importance)
+                        Icons.Filled.Star,
+                        "${task.importance}",
+                        importanceColor(task.importance)
                     )
-                    InfoPill(
-                        icon = Icons.Filled.Bolt,
-                        text = "${task.effort}/10"
-                    )
+                    InfoPill(Icons.Filled.Bolt, "${task.effort}/10")
                     task.deadline?.let {
                         InfoPill(
-                            icon = Icons.Outlined.CalendarToday,
-                            text = SimpleDateFormat(
-                                "dd.MM.yy",
-                                Locale.getDefault()
-                            ).format(Date(it))
+                            Icons.Outlined.CalendarToday,
+                            SimpleDateFormat("dd.MM.yy", Locale.getDefault()).format(Date(it))
                         )
                     }
                     if (task.recurrence != Recurrence.NONE) {
                         InfoPill(
-                            icon = Icons.Filled.Repeat,
-                            text = when (task.recurrence) {
+                            Icons.Filled.Repeat,
+                            when (task.recurrence) {
                                 Recurrence.DAILY -> "Ежедн."
                                 Recurrence.WEEKLY -> "Еженед."
                                 Recurrence.BIWEEKLY -> "2 нед."
@@ -205,15 +250,12 @@ private fun importanceColor(importance: Int) = when (importance) {
 
 @Composable
 private fun InfoPill(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     text: String,
     color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     if (text.isBlank()) return
-    Surface(
-        shape = RoundedCornerShape(50),
-        color = color.copy(alpha = 0.12f)
-    ) {
+    Surface(shape = RoundedCornerShape(50), color = color.copy(alpha = 0.12f)) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
             verticalAlignment = Alignment.CenterVertically,

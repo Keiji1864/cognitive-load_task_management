@@ -1,5 +1,8 @@
 package com.example.cognitask.presentation.ui.tasks
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,15 +18,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Label
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -60,10 +66,14 @@ fun TaskListScreen(
     val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
-    var showCategoryMenu by remember { mutableStateOf(false) }
 
+    var showCategoryMenu by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
     var deleteTaskId by remember { mutableStateOf<Long?>(null) }
+
+    var selectedIds by remember { mutableStateOf(emptySet<Long>()) }
+    val isSelecting = selectedIds.isNotEmpty()
+    var showAddPlanDialog by remember { mutableStateOf(false) }
 
     deleteTaskId?.let { id ->
         AlertDialog(
@@ -81,26 +91,51 @@ fun TaskListScreen(
         )
     }
 
+    if (showAddPlanDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddPlanDialog = false },
+            title = { Text("Добавить в план дня?") },
+            text = { Text("Выбрано задач: ${selectedIds.size}. Они появятся в «Плане дня» на главном экране.") },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.addToPlan(selectedIds.toList())
+                    selectedIds = emptySet()
+                    showAddPlanDialog = false
+                }) { Text("Добавить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddPlanDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Мои задачи") },
+                title = {
+                    Text(
+                        if (isSelecting) "Выбрано: ${selectedIds.size}"
+                        else "Мои задачи"
+                    )
+                },
                 expandedHeight = 48.dp,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
+                navigationIcon = {
+                    AnimatedVisibility(visible = isSelecting, enter = fadeIn(), exit = fadeOut()) {
+                        IconButton(onClick = { selectedIds = emptySet() }) {
+                            Icon(Icons.Filled.Close, "Отменить выделение")
+                        }
+                    }
+                },
                 actions = {
-                    if (categories.isNotEmpty()) {
+                    if (!isSelecting && categories.isNotEmpty()) {
                         Box {
                             IconButton(onClick = { showCategoryMenu = true }) {
-                                BadgedBox(
-                                    badge = {
-                                        if (selectedCategory != null) Badge()
-                                    }
-                                ) {
+                                BadgedBox(badge = { if (selectedCategory != null) Badge() }) {
                                     Icon(Icons.Filled.Label, "Категория")
                                 }
                             }
@@ -114,8 +149,7 @@ fun TaskListScreen(
                                             "Все категории",
                                             color = if (selectedCategory == null)
                                                 MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurface
+                                            else MaterialTheme.colorScheme.onSurface
                                         )
                                     },
                                     onClick = {
@@ -132,8 +166,7 @@ fun TaskListScreen(
                                                 overflow = TextOverflow.Ellipsis,
                                                 color = if (selectedCategory == cat)
                                                     MaterialTheme.colorScheme.primary
-                                                else
-                                                    MaterialTheme.colorScheme.onSurface
+                                                else MaterialTheme.colorScheme.onSurface
                                             )
                                         },
                                         onClick = {
@@ -144,29 +177,30 @@ fun TaskListScreen(
                             }
                         }
                     }
-                    Box {
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.Filled.FilterList, "Сортировка")
-                        }
-                        DropdownMenu(
-                            expanded = showSortMenu,
-                            onDismissRequest = { showSortMenu = false }
-                        ) {
-                            SortTasksUseCase.SortOrder.entries.forEach { order ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            order.label,
-                                            color = if (order == sortOrder)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        viewModel.setSortOrder(order); showSortMenu = false
-                                    }
-                                )
+                    if (!isSelecting) {
+                        Box {
+                            IconButton(onClick = { showSortMenu = true }) {
+                                Icon(Icons.Filled.FilterList, "Сортировка")
+                            }
+                            DropdownMenu(
+                                expanded = showSortMenu,
+                                onDismissRequest = { showSortMenu = false }
+                            ) {
+                                SortTasksUseCase.SortOrder.entries.forEach { order ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                order.label,
+                                                color = if (order == sortOrder)
+                                                    MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        onClick = {
+                                            viewModel.setSortOrder(order); showSortMenu = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -174,8 +208,16 @@ fun TaskListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onNavigateToForm(-1L) }) {
-                Icon(Icons.Filled.Add, "Новая задача")
+            if (isSelecting) {
+                ExtendedFloatingActionButton(
+                    onClick = { showAddPlanDialog = true },
+                    icon = { Icon(Icons.Filled.CalendarMonth, null) },
+                    text = { Text("В план (${selectedIds.size})") }
+                )
+            } else {
+                FloatingActionButton(onClick = { onNavigateToForm(-1L) }) {
+                    Icon(Icons.Filled.Add, "Новая задача")
+                }
             }
         }
     ) { padding ->
@@ -200,69 +242,105 @@ fun TaskListScreen(
                 }
             }
         } else {
-            if (selectedCategory != null) {
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .fillMaxWidth()
-                ) {
-                    InputChip(
-                        selected = true,
-                        onClick = { viewModel.setCategory(null) },
-                        label = {
-                            Text("Категория: ${selectedCategory!!.replaceFirstChar { it.uppercase() }}")
-                        },
-                        trailingIcon = {
-                            Icon(
-                                Icons.Filled.Close, "Сбросить",
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    )
-                }
-            }
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(padding)
             ) {
-                if (active.isNotEmpty()) {
-                    item {
-                        Text(
-                            "Активные (${active.size})",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                    }
-                    items(active, key = { it.id }) { task ->
-                        TaskCard(
-                            task = task,
-                            onToggleComplete = viewModel::toggleComplete,
-                            onEdit = { onNavigateToForm(it) },
-                            onDelete = { deleteTaskId = it }
+                if (selectedCategory != null) {
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .fillMaxWidth()
+                    ) {
+                        InputChip(
+                            selected = true,
+                            onClick = { viewModel.setCategory(null) },
+                            label = { Text("Категория: ${selectedCategory!!.replaceFirstChar { it.uppercase() }}") },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Filled.Close,
+                                    "Сбросить",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         )
                     }
                 }
-                if (completed.isNotEmpty()) {
-                    item {
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Выполненные (${completed.size})",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
+
+                AnimatedVisibility(visible = !isSelecting) {
+                    Text(
+                        "Удерживай задачу, чтобы добавить в план дня",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                }
+
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (active.isNotEmpty()) {
+                        item {
+                            Text(
+                                "Активные (${active.size})",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        items(active, key = { it.id }) { task ->
+                            val inPlan = task.isInDailyPlan
+                            val selected = task.id in selectedIds
+                            TaskCard(
+                                task = task,
+                                onToggleComplete = viewModel::toggleComplete,
+                                onEdit = { onNavigateToForm(it) },
+                                onDelete = { deleteTaskId = it },
+                                isSelected = selected,
+                                isInPlan = inPlan,
+                                onClick = {
+                                    when {
+                                        inPlan -> { /* в плане — не выделяем */
+                                        }
+
+                                        isSelecting -> {
+                                            selectedIds = if (selected)
+                                                selectedIds - task.id
+                                            else
+                                                selectedIds + task.id
+                                        }
+
+                                        else -> onNavigateToForm(task.id)
+                                    }
+                                },
+                                onLongClick = {
+                                    if (!inPlan) selectedIds = selectedIds + task.id
+                                }
+                            )
+                        }
                     }
-                    items(completed, key = { it.id }) { task ->
-                        TaskCard(
-                            task = task,
-                            onToggleComplete = viewModel::toggleComplete,
-                            onEdit = { onNavigateToForm(it) },
-                            onDelete = { deleteTaskId = it }
-                        )
+
+                    if (completed.isNotEmpty()) {
+                        item {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Выполненные (${completed.size})",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        items(completed, key = { it.id }) { task ->
+                            TaskCard(
+                                task = task,
+                                onToggleComplete = viewModel::toggleComplete,
+                                onEdit = { onNavigateToForm(it) },
+                                onDelete = { deleteTaskId = it },
+                                isInPlan = task.isInDailyPlan
+                            )
+                        }
                     }
                 }
             }

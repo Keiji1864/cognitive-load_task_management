@@ -1,5 +1,6 @@
 package com.example.cognitask.presentation.ui.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,11 +28,13 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -44,6 +47,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -108,6 +112,25 @@ fun HomeScreen(
             },
             dismissButton = {
                 TextButton(onClick = viewModel::dismissConfirm) { Text("Отмена") }
+            }
+        )
+    }
+
+    if (state.showClearPlanDialog) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissClearPlan,
+            title = { Text("Начать новый день?") },
+            text = { Text("Задачи уйдут из плана — выполненные сохранятся в истории.") },
+            confirmButton = {
+                Button(
+                    onClick = viewModel::clearPlan,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) { Text("Очистить план") }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissClearPlan) { Text("Отмена") }
             }
         )
     }
@@ -211,7 +234,8 @@ fun HomeScreen(
                     state = state,
                     onComplete = viewModel::completeTask,
                     onRemove = viewModel::removeFromPlan,
-                    onEnergyChange = viewModel::updateEnergy
+                    onEnergyChange = viewModel::updateEnergy,
+                    onRequestClearPlan = viewModel::requestClearPlan
                 )
             }
         }
@@ -454,7 +478,8 @@ private fun DailyPlanTab(
     state: HomeUiState,
     onComplete: (Task) -> Unit,
     onRemove: (Long) -> Unit,
-    onEnergyChange: (Int) -> Unit
+    onEnergyChange: (Int) -> Unit,
+    onRequestClearPlan: () -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
@@ -563,6 +588,22 @@ private fun DailyPlanTab(
                 items(completed, key = { "done_${it.id}" }) { task ->
                     PlanTaskCard(task = task, onComplete = onComplete, onRemove = onRemove)
                 }
+            }
+        }
+
+        item {
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = onRequestClearPlan,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f))
+            ) {
+                Icon(Icons.Filled.Refresh, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Следующий день — обновить план")
             }
         }
 

@@ -29,7 +29,8 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     val userName: String = "",
     val pendingSelection: Set<Long> = emptySet(),
-    val showConfirmDialog: Boolean = false
+    val showConfirmDialog: Boolean = false,
+    val showClearPlanDialog: Boolean = false
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,6 +46,7 @@ class HomeViewModel @Inject constructor(
 
     private val _pending = MutableStateFlow<Set<Long>>(emptySet())
     private val _showConfirm = MutableStateFlow(false)
+    private val _showClearPlan = MutableStateFlow(false)
 
     val uiState: StateFlow<HomeUiState> = sessionDataStore.userId
         .filter { it != -1L }
@@ -53,13 +55,15 @@ class HomeViewModel @Inject constructor(
                 getTasksUseCase(uid),
                 sessionDataStore.energyLevel,
                 _pending,
-                _showConfirm
-            ) { taskList, energy, pending, showConfirm ->
+                _showConfirm,
+                _showClearPlan
+            ) { taskList, energy, pending, showConfirm, showClear ->
                 val active = taskList.filter { !it.isCompleted && !it.isInDailyPlan }
                 val recommended = smartPickUseCase(active, energy)
-                val dailyPlan = taskList.filter { it.isInDailyPlan }
+                val dailyPlan = taskList
+                    .filter { it.isInDailyPlan }
+                    .sortedWith(compareByDescending<Task> { it.importance }.thenBy { it.effort })
                 val user = userRepository.getUserById(uid)
-
                 HomeUiState(
                     recommended = recommended,
                     dailyPlan = dailyPlan,
@@ -67,6 +71,7 @@ class HomeViewModel @Inject constructor(
                     userName = user?.name ?: "",
                     pendingSelection = pending,
                     showConfirmDialog = showConfirm,
+                    showClearPlanDialog = showClear,
                     isLoading = false
                 )
             }
@@ -76,7 +81,6 @@ class HomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = HomeUiState()
         )
-
 
     fun togglePending(taskId: Long) {
         _pending.update { current ->
@@ -106,7 +110,6 @@ class HomeViewModel @Inject constructor(
         _showConfirm.value = false
     }
 
-
     fun completeTask(task: Task) {
         viewModelScope.launch {
             completePlanTask(task, uiState.value.energyLevel)
@@ -119,8 +122,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-
     fun updateEnergy(level: Int) {
         viewModelScope.launch { sessionDataStore.updateEnergyLevel(level) }
+    }
+
+    fun requestClearPlan() {
+        _showClearPlan.value = true
+    }
+
+    fun dismissClearPlan() {
+        _showClearPlan.value = false
+    }
+
+    fun clearPlan() {
+        viewModelScope.launch {
+            uiState.value.dailyPlan.forEach { task ->
+                addToDailyPlanUseCase.toggle(task.id, false)
+            }
+            _showClearPlan.value = false
+        }
     }
 }
