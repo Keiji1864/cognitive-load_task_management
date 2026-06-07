@@ -10,6 +10,7 @@ data class Task(
     val deadline: Long? = null,
     val recurrence: Recurrence = Recurrence.NONE,
     val isCompleted: Boolean = false,
+    val isInDailyPlan: Boolean = false,
     val category: String = "",
     val createdAt: Long = System.currentTimeMillis()
 )

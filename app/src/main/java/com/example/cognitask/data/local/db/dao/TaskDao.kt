@@ -29,4 +29,13 @@ interface TaskDao {
 
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("SELECT * FROM tasks WHERE user_id = :userId AND is_in_daily_plan = 1 ORDER BY created_at DESC")
+    fun getDailyPlanTasks(userId: Long): Flow<List<TaskEntity>>
+
+    @Query("UPDATE tasks SET is_in_daily_plan = :inPlan WHERE id = :taskId")
+    suspend fun setInDailyPlan(taskId: Long, inPlan: Boolean)
+
+    @Query("UPDATE tasks SET is_in_daily_plan = 1 WHERE id IN (:taskIds)")
+    suspend fun addAllToDailyPlan(taskIds: List<Long>)
 }

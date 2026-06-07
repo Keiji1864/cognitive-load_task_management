@@ -30,4 +30,13 @@ class TaskRepositoryImpl @Inject constructor(
 
     override suspend fun deleteTaskById(id: Long) =
         taskDao.deleteById(id)
+
+    override fun getDailyPlanTasks(userId: Long): Flow<List<Task>> =
+        taskDao.getDailyPlanTasks(userId).map { list -> list.map { it.toDomain() } }
+
+    override suspend fun setInDailyPlan(taskId: Long, inPlan: Boolean) =
+        taskDao.setInDailyPlan(taskId, inPlan)
+
+    override suspend fun addAllToDailyPlan(taskIds: List<Long>) =
+        taskDao.addAllToDailyPlan(taskIds)
 }

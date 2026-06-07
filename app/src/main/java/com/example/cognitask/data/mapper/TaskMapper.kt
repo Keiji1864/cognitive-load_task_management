@@ -14,6 +14,7 @@ fun TaskEntity.toDomain(): Task = Task(
     deadline = deadline,
     recurrence = runCatching { Recurrence.valueOf(recurrence) }.getOrDefault(Recurrence.NONE),
     isCompleted = isCompleted,
+    isInDailyPlan = isInDailyPlan,
     category = category,
     createdAt = createdAt
 )
@@ -28,6 +29,7 @@ fun Task.toEntity(): TaskEntity = TaskEntity(
     deadline = deadline,
     recurrence = recurrence.name,
     isCompleted = isCompleted,
+    isInDailyPlan = isInDailyPlan,
     category = category,
     createdAt = createdAt
 )

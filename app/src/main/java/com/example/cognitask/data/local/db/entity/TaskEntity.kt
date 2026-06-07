@@ -46,6 +46,9 @@ data class TaskEntity(
     @ColumnInfo(name = "is_completed")
     val isCompleted: Boolean = false,
 
+    @ColumnInfo(name = "is_in_daily_plan")
+    val isInDailyPlan: Boolean = false,
+
     @ColumnInfo(name = "category")
     val category: String = "",
 

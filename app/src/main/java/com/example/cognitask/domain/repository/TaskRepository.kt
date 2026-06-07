@@ -15,4 +15,10 @@ interface TaskRepository {
     suspend fun deleteTask(task: Task)
 
     suspend fun deleteTaskById(id: Long)
+
+    fun getDailyPlanTasks(userId: Long): Flow<List<Task>>
+
+    suspend fun setInDailyPlan(taskId: Long, inPlan: Boolean)
+
+    suspend fun addAllToDailyPlan(taskIds: List<Long>)
 }
