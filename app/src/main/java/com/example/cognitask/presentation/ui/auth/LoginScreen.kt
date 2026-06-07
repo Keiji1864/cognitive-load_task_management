@@ -80,7 +80,6 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
 
-            //Заголовок
             Text(
                 text = "CogniTask",
                 style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
@@ -94,7 +93,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(48.dp))
 
-            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -113,7 +111,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Пароль
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -145,7 +142,6 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            //Сообщение об ошибке
             AnimatedVisibility(visible = errorMessage != null) {
                 Text(
                     text = errorMessage ?: "",
@@ -159,7 +155,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(28.dp))
 
-            // Кнопка входа
             Button(
                 onClick = { focusManager.clearFocus(); onLogin(email, password) },
                 enabled = !isLoading,
@@ -180,7 +175,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            //Ссылка на регистрацию
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "Нет аккаунта?",

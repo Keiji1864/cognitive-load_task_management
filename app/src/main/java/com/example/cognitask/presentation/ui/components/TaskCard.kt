@@ -5,6 +5,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -173,14 +175,17 @@ fun TaskCard(
                 }
             }
 
-            Column(
-                modifier = Modifier.padding(end = 2.dp),
-                verticalArrangement = Arrangement.spacedBy(0.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                modifier = Modifier
+                    .width(32.dp)
+                    .height(80.dp)
+                    .padding(end = 2.dp)
             ) {
                 IconButton(
                     onClick = { onEdit(task.id) },
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.TopEnd)
                 ) {
                     Icon(
                         Icons.Filled.Edit, "Редактировать",
@@ -190,7 +195,9 @@ fun TaskCard(
                 }
                 IconButton(
                     onClick = { onDelete(task.id) },
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.BottomEnd)
                 ) {
                     Icon(
                         Icons.Filled.Delete, "Удалить",

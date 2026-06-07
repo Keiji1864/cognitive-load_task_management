@@ -2,6 +2,8 @@ package com.example.cognitask.presentation.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
@@ -120,14 +121,6 @@ fun HomeScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
-                actions = {
-                    IconButton(onClick = onLogout) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ExitToApp, "Выйти",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
             )
         },
         floatingActionButton = {
@@ -337,6 +330,8 @@ private fun RecommendationCard(
     isPending: Boolean,
     onToggle: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }  // ← без ripple
+
     val borderColor = if (isPending) MaterialTheme.colorScheme.primary
     else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
     val bgColor = if (isPending)
@@ -345,7 +340,6 @@ private fun RecommendationCard(
         MaterialTheme.colorScheme.surface
 
     Card(
-        onClick = onToggle,
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
         elevation = CardDefaults.cardElevation(if (isPending) 4.dp else 1.dp),
@@ -355,6 +349,11 @@ private fun RecommendationCard(
                 width = if (isPending) 2.dp else 1.dp,
                 color = borderColor,
                 shape = RoundedCornerShape(14.dp)
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onToggle
             )
     ) {
         Row(
