@@ -100,7 +100,6 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
 
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onLogout = { logoutAndGoToLogin(authViewModel, navController) },
                     onNavigateToTasks = {
                         navController.navigate(Screen.TaskList.route) {
                             popUpTo(Screen.Home.route) { saveState = true }

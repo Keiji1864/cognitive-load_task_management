@@ -2,7 +2,6 @@ package com.example.cognitask.presentation.ui.home
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -80,7 +79,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onLogout: () -> Unit,
+    //onLogout: () -> Unit,
     onNavigateToTasks: () -> Unit,
     onNavigateToForm: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
@@ -138,7 +137,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                expandedHeight = 48.dp,
+                //expandedHeight = 48.dp,
                 title = {
                     Column {
                         Text(
@@ -387,27 +386,30 @@ private fun RecommendationCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    val borderColor = if (isPending) MaterialTheme.colorScheme.primary
-    else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-
     val bgColor = if (isPending)
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        MaterialTheme.colorScheme.primaryContainer
     else
         MaterialTheme.colorScheme.surface
 
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
-        elevation = CardDefaults.cardElevation(if (isPending) 4.dp else 1.dp),
+        border = if (isPending)
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        else null,
+        elevation = if (isPending)
+            CardDefaults.cardElevation(
+                defaultElevation = 0.dp,
+                pressedElevation = 0.dp,
+                focusedElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                draggedElevation = 0.dp,
+                disabledElevation = 0.dp
+            )
+        else
+            CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (isPending) Modifier.border(
-                    width = 2.dp,
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(14.dp)
-                ) else Modifier
-            )
             .clickable(interactionSource = interactionSource, indication = null, onClick = onToggle)
     ) {
         Row(

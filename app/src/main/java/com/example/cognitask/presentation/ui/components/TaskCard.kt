@@ -5,7 +5,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,7 +65,7 @@ fun TaskCard(
 ) {
     val cardColor by animateColorAsState(
         targetValue = when {
-            isSelected      -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+            isSelected      -> MaterialTheme.colorScheme.primaryContainer
             task.isCompleted -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             else            -> MaterialTheme.colorScheme.surface
         },
@@ -80,15 +80,9 @@ fun TaskCard(
         label = "checkScale"
     )
 
-    val borderMod = if (isSelected)
-        Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
-    else
-        Modifier
-
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .then(borderMod)
             .clip(RoundedCornerShape(12.dp))
             .combinedClickable(
                 onClick = onClick,
@@ -96,9 +90,22 @@ fun TaskCard(
             ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor),
-        elevation = CardDefaults.cardElevation(
-            if (task.isCompleted || isInPlan) 0.dp else 2.dp
-        )
+        border = if (isSelected)
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        else null,
+        elevation = if (isSelected)
+            CardDefaults.cardElevation(
+                defaultElevation = 0.dp,
+                pressedElevation = 0.dp,
+                focusedElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                draggedElevation = 0.dp,
+                disabledElevation = 0.dp
+            )
+        else
+            CardDefaults.cardElevation(
+                defaultElevation = if (task.isCompleted || isInPlan) 0.dp else 2.dp
+            )
     ) {
         Row(
             modifier = Modifier.padding(start = 4.dp, end = 0.dp, top = 8.dp, bottom = 8.dp),
