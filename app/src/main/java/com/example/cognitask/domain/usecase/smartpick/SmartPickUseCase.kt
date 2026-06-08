@@ -11,12 +11,43 @@ class SmartPickUseCase @Inject constructor() {
         val now = System.currentTimeMillis()
         val today = Calendar.getInstance()
 
-        return tasks
-            .filter { !it.isCompleted }
-            .map { task -> task to score(task, energyLevel, now, today) }
+        val active = tasks.filter { !it.isCompleted }
+        if (active.isEmpty()) return emptyList()
+
+        val dayBudget = energyLevel * 5 / 2
+        val maxTasks = pickCount(energyLevel)
+
+        val scored = active
+            .map { it to valueScore(it, now, today) }
             .sortedByDescending { (_, s) -> s }
-            .take(pickCount(energyLevel))
-            .map { (task, _) -> task }
+
+        val selected = mutableListOf<Task>()
+        var budgetLeft = dayBudget
+
+        for ((task, _) in scored) {
+            if (selected.size >= maxTasks) break
+            if (task.effort <= budgetLeft) {
+                selected.add(task)
+                budgetLeft -= task.effort
+            }
+        }
+
+        if (selected.isEmpty()) {
+            scored
+                .firstOrNull { (t, _) -> t.effort <= dayBudget }
+                ?.let { (t, _) -> selected.add(t) }
+        }
+
+        if (selected.size < 2 && budgetLeft > 0) {
+            scored
+                .filter { (t, _) -> t !in selected && t.effort <= budgetLeft }
+                .maxByOrNull { (_, s) -> s }
+                ?.let { (t, _) ->
+                    selected.add(t)
+                }
+        }
+
+        return selected
     }
 
     private fun pickCount(energy: Int) = when {
@@ -25,20 +56,10 @@ class SmartPickUseCase @Inject constructor() {
         else -> 4
     }
 
-    private fun score(task: Task, energy: Int, nowMs: Long, today: Calendar): Float {
-        val raw =
-            importanceScore(task.importance) * W_IMPORTANCE +
-                    deadlineScore(task.deadline, nowMs) * W_DEADLINE +
-                    recurrenceScore(task, today) * W_RECURRENCE +
-                    energyMatchScore(task.effort, energy) * W_ENERGY
-
-        val overloadPenalty = if (task.effort > energy) {
-            val excess = task.effort - energy
-            maxOf(0.10f, 1f - excess * 0.15f)
-        } else 1f
-
-        return raw * overloadPenalty
-    }
+    private fun valueScore(task: Task, nowMs: Long, today: Calendar): Float =
+        importanceScore(task.importance) * W_IMPORTANCE +
+                deadlineScore(task.deadline, nowMs) * W_DEADLINE +
+                recurrenceScore(task, today) * W_RECURRENCE
 
     private fun importanceScore(importance: Int) = (importance - 1) / 4f
 
@@ -56,14 +77,6 @@ class SmartPickUseCase @Inject constructor() {
         }
     }
 
-    private fun energyMatchScore(effort: Int, energy: Int): Float =
-        if (effort <= energy) {
-            1f - ((energy - effort) / 20f).coerceIn(0f, 0.25f)
-        } else {
-            val overload = (effort - energy).toFloat() / energy.toFloat()
-            maxOf(0f, 1f - overload)
-        }
-
     private fun recurrenceScore(task: Task, today: Calendar): Float = when (task.recurrence) {
         Recurrence.NONE -> 0f
         Recurrence.DAILY -> 1f
@@ -79,9 +92,8 @@ class SmartPickUseCase @Inject constructor() {
     }
 
     companion object {
-        private const val W_IMPORTANCE = 0.35f
-        private const val W_DEADLINE = 0.30f
-        private const val W_ENERGY = 0.25f
+        private const val W_IMPORTANCE = 0.55f
+        private const val W_DEADLINE = 0.35f
         private const val W_RECURRENCE = 0.10f
         private const val MS_DAY = 86_400_000L
     }
