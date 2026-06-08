@@ -38,4 +38,14 @@ interface TaskDao {
 
     @Query("UPDATE tasks SET is_in_daily_plan = 1 WHERE id IN (:taskIds)")
     suspend fun addAllToDailyPlan(taskIds: List<Long>)
+
+    @Query(
+        """
+    UPDATE tasks 
+    SET is_completed = 0, is_in_daily_plan = 0 
+    WHERE user_id = :userId AND recurrence != 'NONE'
+"""
+    )
+    suspend fun resetRecurringTasks(userId: Long)
+
 }

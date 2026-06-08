@@ -9,6 +9,7 @@ import com.example.cognitask.domain.usecase.smartpick.SmartPickUseCase
 import com.example.cognitask.domain.usecase.task.AddToDailyPlanUseCase
 import com.example.cognitask.domain.usecase.task.CompletePlanTaskUseCase
 import com.example.cognitask.domain.usecase.task.GetTasksUseCase
+import com.example.cognitask.domain.usecase.task.ResetRecurringTasksUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -41,7 +43,8 @@ class HomeViewModel @Inject constructor(
     private val addToDailyPlanUseCase: AddToDailyPlanUseCase,
     private val completePlanTask: CompletePlanTaskUseCase,
     private val sessionDataStore: SessionDataStore,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val resetRecurringTasksUseCase: ResetRecurringTasksUseCase
 ) : ViewModel() {
 
     private val _pending = MutableStateFlow<Set<Long>>(emptySet())
@@ -136,9 +139,14 @@ class HomeViewModel @Inject constructor(
 
     fun clearPlan() {
         viewModelScope.launch {
-            uiState.value.dailyPlan.forEach { task ->
-                addToDailyPlanUseCase.toggle(task.id, false)
-            }
+            val userId = sessionDataStore.userId.first()
+
+            resetRecurringTasksUseCase(userId)
+
+            uiState.value.dailyPlan
+                .filter { it.recurrence == com.example.cognitask.domain.model.Recurrence.NONE }
+                .forEach { task -> addToDailyPlanUseCase.toggle(task.id, false) }
+
             _showClearPlan.value = false
         }
     }

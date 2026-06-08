@@ -39,4 +39,7 @@ class TaskRepositoryImpl @Inject constructor(
 
     override suspend fun addAllToDailyPlan(taskIds: List<Long>) =
         taskDao.addAllToDailyPlan(taskIds)
+
+    override suspend fun resetRecurringTasks(userId: Long) =
+        taskDao.resetRecurringTasks(userId)
 }

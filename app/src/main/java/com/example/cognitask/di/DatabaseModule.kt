@@ -24,7 +24,6 @@ object DatabaseModule {
             AppDatabase::class.java,
             AppDatabase.DATABASE_NAME
         )
-            // При смене схемы добавляй миграцию вместо fallbackToDestructiveMigration
             .fallbackToDestructiveMigration()
             .build()
 

@@ -21,4 +21,6 @@ interface TaskRepository {
     suspend fun setInDailyPlan(taskId: Long, inPlan: Boolean)
 
     suspend fun addAllToDailyPlan(taskIds: List<Long>)
+
+    suspend fun resetRecurringTasks(userId: Long)
 }
