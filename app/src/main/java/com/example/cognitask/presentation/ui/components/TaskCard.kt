@@ -4,8 +4,8 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,9 +65,9 @@ fun TaskCard(
 ) {
     val cardColor by animateColorAsState(
         targetValue = when {
-            isSelected      -> MaterialTheme.colorScheme.primaryContainer
+            isSelected -> MaterialTheme.colorScheme.primaryContainer
             task.isCompleted -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            else            -> MaterialTheme.colorScheme.surface
+            else -> MaterialTheme.colorScheme.surface
         },
         label = "cardColor"
     )

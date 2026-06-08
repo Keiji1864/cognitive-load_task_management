@@ -39,9 +39,6 @@ android {
     buildFeatures {
         compose = true
     }
-//    ksp {
-//        arg("room.schemaLocation", "$projectDir/schemas")
-//    }
 }
 
 dependencies {
@@ -76,6 +73,7 @@ dependencies {
 
     // Tests
     testImplementation(libs.junit)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

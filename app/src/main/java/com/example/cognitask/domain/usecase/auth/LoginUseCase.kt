@@ -22,4 +22,11 @@ class LoginUseCase @Inject constructor(
 
         return Result.success(user)
     }
+
+    companion object {
+        fun validate(email: String, password: String): Result<Unit> = runCatching {
+            require(email.isNotBlank()) { "Email не может быть пустым" }
+            require(password.length >= 6) { "Пароль минимум 6 символов" }
+        }
+    }
 }
