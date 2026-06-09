@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -70,42 +71,30 @@ fun RegisterScreen(
         if (uiState is AuthUiState.Success) onRegisterSuccess()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Создать аккаунт") },
-                expandedHeight = 48.dp,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                navigationIcon = {
-                    IconButton(onClick = onNavigateToLogin) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .imePadding(),
             contentAlignment = Alignment.Center
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .imePadding()
-                    .padding(innerPadding)
-                    .padding(horizontal = 28.dp, vertical = 16.dp),
+                    .padding(horizontal = 28.dp, vertical = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = "CogniTask",
+                    style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Управляй задачами с умом",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
                 Spacer(Modifier.height(8.dp))
 
                 OutlinedTextField(
@@ -252,5 +241,5 @@ fun RegisterScreen(
                 }
             }
         }
-    }
+
 }

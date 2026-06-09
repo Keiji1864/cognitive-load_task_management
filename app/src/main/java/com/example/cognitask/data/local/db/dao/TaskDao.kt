@@ -47,5 +47,4 @@ interface TaskDao {
 """
     )
     suspend fun resetRecurringTasks(userId: Long)
-
 }
